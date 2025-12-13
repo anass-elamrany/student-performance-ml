@@ -17,13 +17,12 @@ def clean_data():
 
     df = df.dropna()
 
-    # 3. Create target variable for CLASSIFICATION (Success vs Failure)
-    # We consider a grade < 10 as a failure
+    
+    
     df['success_status'] = df['G3'].apply(lambda x: 1 if x >= 10 else 0)
     print(f"   -> Distribution of successes (1) / failures (0) : \n{df['success_status'].value_counts()}")
 
-    # 4. Encoding of text variables (Object -> Int)
-    # Ex: 'school' (GP/MS) becomes 0 or 1
+
     le = LabelEncoder()
     object_cols = df.select_dtypes(include=['object']).columns
     
@@ -32,7 +31,7 @@ def clean_data():
     for col in object_cols:
         df[col] = le.fit_transform(df[col])
 
-    # 5. Save
+    
     processed_dir = 'data/processed'
     os.makedirs(processed_dir, exist_ok=True)
     
