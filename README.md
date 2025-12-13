@@ -19,18 +19,28 @@ This project automates the process of predicting student success based on demogr
 
 ## 🚀 How to Run
 
-Option 1: Using Docker (Recommended)
-You don't need to install Python. Just run these two commands:
+### Option 1: Using Docker (Recommended)
+This method isolates the environment. You don't need to install Python libraries manually.
 
-```bash
-# 1. Build the image
-docker build -t student-ml .
+1.  **Build the Docker image:**
+    ```bash
+    docker build -t student-ml .
+    ```
 
-# 2. Run the pipeline
-docker run -v $(pwd)/data:/app/data student-ml
-```
+2.  **Run the pipeline:**
+    *We use `-v` to map your local folder to the container so the generated CSV files are saved on your computer, not lost inside the container.*
+    ```bash
+    # Linux / Mac
+    docker run -v $(pwd)/data:/app/data student-ml
+    
+    # Windows (Command Prompt)
+    docker run -v %cd%/data:/app/data student-ml
+    
+    # Windows (PowerShell)
+    docker run -v ${PWD}/data:/app/data student-ml
+    ```
 
-Option 2: Running Locally (Python)
+### Option 2: Running Locally (Python)
 If you prefer running it on your machine:
 ```
 # 1. Install dependencies
