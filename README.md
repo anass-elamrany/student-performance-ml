@@ -80,7 +80,8 @@ If you prefer running it on your machine:
 ```
 # 1. Install dependencies
 pip install -r requirements.txt
-
+```
+```
 # 2. Run the main script
 python src/main.py
 ```
