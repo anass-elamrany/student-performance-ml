@@ -51,6 +51,7 @@ student-performance-ml/
 ├── notebooks/             # Jupyter Notebooks for Deep Analysis & Charts
 ├── Dockerfile             # Production-ready Docker image
 └── requirements.txt       # Python dependencies
+```
 
 ## 🚀 How to Run
 
@@ -77,14 +78,17 @@ This method isolates the environment. You don't need to install Python libraries
 
 ### Option 2: Running Locally (Python)
 If you prefer running it on your machine:
+
 ```
 # 1. Install dependencies
 pip install -r requirements.txt
 ```
+
 ```
 # 2. Run the main script
 python src/main.py
 ```
+
 ## 📊 Model Performance
 
 The system evaluates multiple models and selects the champion. Current benchmarks on the test set:
