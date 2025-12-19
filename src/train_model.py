@@ -1,80 +1,164 @@
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.metrics import accuracy_score, mean_absolute_error, classification_report
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, mean_absolute_error, classification_report, confusion_matrix
 import joblib
 import os
+import time
 
 def train():
-    print("Starting model training...")
+    print("========================================")
+    print("🤖 [3/3] TRAIN MODEL")
+    print("========================================")
     
-    # 1. Load cleaned data
+    #Chargement des données
     data_path = 'data/processed/student_data_cleaned.csv'
     if not os.path.exists(data_path):
         print("❌ Error: Data not found. Run preprocessing.py first.")
         return
         
     df = pd.read_csv(data_path)
+    print(f"Données chargées : {df.shape[0]} étudiants")
     
-    # 2. Separation of Features (X) and Targets (y)
-    # Remove answers (G3 and statut_reussite) from input data
-    X = df.drop(['G3', 'statut_reussite'], axis=1)
+    # Séparation Features / Target
+    # On enlève les réponses (G3 et la catégorie)
+    X = df.drop(['G3', 'grade_category'], axis=1)
+    y_class = df['grade_category'] 
+    y_reg = df['G3']               
     
-    # Target 1: Classification (0 = Failure, 1 = Success)
-    y_class = df['statut_reussite']
-    
-    # Target 2: Regression (The exact grade G3)
-    y_reg = df['G3']
-    
-    # 3. Train/Test split (80% training, 20% test)
-    # Note: We use the same split for both tasks for consistency
+    # Split Data (80% Train, 20% Test)
     X_train, X_test, y_class_train, y_class_test, y_reg_train, y_reg_test = train_test_split(
         X, y_class, y_reg, test_size=0.2, random_state=42
     )
     
-    # --- TASK A: CLASSIFICATION (Risk of failure) ---
-    print("\n🔹 Training Classification model (Random Forest)...")
-    clf = RandomForestClassifier(n_estimators=100, random_state=42)
-    clf.fit(X_train, y_class_train)
-    
-    # Evaluation
-    y_class_pred = clf.predict(X_test)
-    acc = accuracy_score(y_class_test, y_class_pred)
-    print(f"   -> Model Accuracy: {acc:.2%}")
-    # Display details (Recall, Precision per class)
-    print("   -> Detailed Report:")
-    print(classification_report(y_class_test, y_class_pred))
+    # ==========================================
+    # COMPARAISON CLASSIFICATION
+    # (Objectif : Prédire la catégorie Bon/Moyen/Risque)
+    # ==========================================
+    print("\n COMPARATIF CLASSIFICATION (Accuracy)")
+    print(f"{'Modèle':<25} | {'Score':<10} | {'Note'}")
+    print("-" * 55)
 
-    # --- TASK B: REGRESSION (Grade Prediction) ---
-    print("\n🔹 Training Regression model...")
-    reg = RandomForestRegressor(n_estimators=100, random_state=42)
-    reg.fit(X_train, y_reg_train)
-    
-    # Evaluation
-    y_reg_pred = reg.predict(X_test)
-    mae = mean_absolute_error(y_reg_test, y_reg_pred)
-    print(f"   -> Mean Absolute Error (MAE): {mae:.2f} points")
-    print(f"      (The model has an average error of {mae:.2f} on the final grade)")
+    classifiers = {
+        "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42),
+        "SVM (Support Vector)": SVC(kernel='linear', random_state=42),  
+        "KNN (k-Nearest)": KNeighborsClassifier(n_neighbors=5),         
+        "GradientBoosting 🚀": GradientBoostingClassifier(random_state=42), 
+        "LogisticRegression": LogisticRegression(max_iter=1000)         
+    }
 
-    # 4. Save Results for POWER BI
-    print("\n💾 Generating Power BI file...")
+    best_clf_name = ""
+    best_clf_score = 0
+    best_clf_model = None
+
+    for name, model in classifiers.items():
+        model.fit(X_train, y_class_train)
+        pred = model.predict(X_test)
+        acc = accuracy_score(y_class_test, pred)
+        
+        # Petit commentaire auto
+        note = "Top!" if acc > 0.85 else "Moyen"
+        print(f"{name:<25} | {acc:.2%}    | {note}")
+        
+        if acc > best_clf_score:
+            best_clf_score = acc
+            best_clf_model = model
+            best_clf_name = name
+
+    print("-" * 55)
+    print(f"🏆 VAINQUEUR CLASSIF : {best_clf_name} (Précision : {best_clf_score:.2%})")
+
+    # ==========================================
+    # COMPARAISON RÉGRESSION
+    # (Objectif : Prédire la note exacte sur 20)
+    # ==========================================
+    print("\n  COMPARATIF RÉGRESSION (Erreur Moyenne MAE)")
+    print(f"{'Modèle':<25} | {'Erreur':<10} | {'Note'}")
+    print("-" * 55)
     
-    # Take entire dataset and add predictions
-    df['Prediction_Risk'] = clf.predict(X)  # 0 or 1
-    df['Prediction_Grade'] = reg.predict(X)  # Estimated grade
+    regressors = {
+        "RandomForest": RandomForestRegressor(n_estimators=100, random_state=42),
+        "LinearRegression": LinearRegression(),                         
+        "KNN Regressor": KNeighborsRegressor(n_neighbors=5),            
+        "GradientBoosting 🚀": GradientBoostingRegressor(random_state=42) 
+    }
+
+    best_reg_name = ""
+    best_reg_score = float('inf') 
+    best_reg_model = None
+
+    for name, model in regressors.items():
+        model.fit(X_train, y_reg_train)
+        pred = model.predict(X_test)
+        mae = mean_absolute_error(y_reg_test, pred)
+        
+        note = "Précis" if mae < 1.0 else "Moyen"
+        print(f"{name:<25} | +/- {mae:.2f}   | {note}")
+        
+        if mae < best_reg_score:
+            best_reg_score = mae
+            best_reg_model = model
+            best_reg_name = name
+
+    print("-" * 55)
+    print(f"🏆 VAINQUEUR REGRESSION : {best_reg_name} (Erreur Moyenne : {best_reg_score:.2f} pts)")
+
+    # ==========================================
+    #  SAUVEGARDE & PRODUCTION
+    # ==========================================
+    print("\n💾 Génération des fichiers finaux...")
     
-    # Add readable "Alert" column
-    df['Alert_Type'] = df.apply(lambda row: 'CRITICAL' if row['Prediction_Risk'] == 0 else 'Normal', axis=1)
+    # On utilise les CHAMPIONS pour générer les données finales
+    df['Prediction_Category'] = best_clf_model.predict(X)
+    df['Prediction_Grade'] = best_reg_model.predict(X)
+    
+    # Système d'alerte basé sur la classification championne
+    def generate_alert(row):
+        cat = row['Prediction_Category']
+        if cat == 0:
+            return '🔴 ALERTE: Risque Élevé'
+        elif cat == 1:
+            return '🟠 Surveillance: Moyen'
+        else:
+            return '🟢 Performance: Bon'
+
+    df['Alert_Status'] = df.apply(generate_alert, axis=1)
+    
+    
+    df['Model_Classif_Used'] = best_clf_name
+    df['Model_Reg_Used'] = best_reg_name
 
     output_path = 'data/processed/predictions_final.csv'
     df.to_csv(output_path, index=False)
     
-    # 5. Save models (if we want to reuse them later in an API)
+    # Sauvegarde des modèles (.pkl)
     os.makedirs('models', exist_ok=True)
-    joblib.dump(clf, 'models/model_classification.pkl')
-    joblib.dump(reg, 'models/model_regression.pkl')
+    joblib.dump(best_clf_model, 'models/model_classification.pkl')
+    joblib.dump(best_reg_model, 'models/model_regression.pkl')
     
-    print(f"✅ Done! File generated: {output_path}")
+    # Génération du rapport texte pour ton PFE
+    report_path = 'models/rapport_performance.txt'
+    with open(report_path, 'w', encoding='utf-8') as f:
+        f.write("RAPPORT AUTOMATIQUE DE PERFORMANCE ML\n")
+        f.write("=====================================\n\n")
+        f.write(f"Date du test : {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+        f.write("CHAMPION CLASSIFICATION (Prédiction du Niveau):\n")
+        f.write(f"- Modèle : {best_clf_name}\n")
+        f.write(f"- Accuracy : {best_clf_score:.2%}\n")
+        f.write("- Explication : Ce modèle est le meilleur pour distinguer les bons élèves des élèves à risque.\n\n")
+        f.write("CHAMPION REGRESSION (Prédiction de la Note):\n")
+        f.write(f"- Modèle : {best_reg_name}\n")
+        f.write(f"- Erreur Moyenne (MAE) : {best_reg_score:.2f} points\n")
+        f.write("- Explication : En moyenne, ce modèle se trompe de moins de 1 point sur la note finale.\n")
+
+    print(f"✅ Terminé ! Rapport généré : {report_path}")
+    print(f"✅ Modèles sauvegardés dans 'models/' (Prêts pour Django)")
 
 if __name__ == "__main__":
     train()

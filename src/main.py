@@ -5,27 +5,24 @@ import time
 
 def main():
     print("========================================")
-    print("Starting MACHINE LEARNING")
+    print("🎓 STUDENT PERFORMANCE PIPELINE START")
     print("========================================")
     
     start_time = time.time()
 
-    
-    print("\n[ 1/3] Get Data")
+    # Etape 1 : Téléchargement
     get_data.ingest_data()
     
-    
-    print("\n[ 2/3] Preprocessing")
+    # Etape 2 : Nettoyage et Création des 3 Classes
     preprocessing.clean_data()
     
-    
-    print("\n[ 3/3] Train Model")
+    # Etape 3 : Entraînement et Sauvegarde des Modèles
     train_model.train()
     
     duration = time.time() - start_time
     print("\n========================================")
-    print(f"✅ PIPELINE finish in {duration:.2f} secondes")
+    print(f"✅ PIPELINE COMPLETED in {duration:.2f} seconds")
     print("========================================")
 
 if __name__ == "__main__":
-    main()  
+    main()

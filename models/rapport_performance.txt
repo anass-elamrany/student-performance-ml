@@ -1,0 +1,14 @@
+RAPPORT AUTOMATIQUE DE PERFORMANCE ML
+=====================================
+
+Date du test : 2025-12-19 18:12:26
+
+CHAMPION CLASSIFICATION (Prédiction du Niveau):
+- Modèle : RandomForest
+- Accuracy : 86.15%
+- Explication : Ce modèle est le meilleur pour distinguer les bons élèves des élèves à risque.
+
+CHAMPION REGRESSION (Prédiction de la Note):
+- Modèle : RandomForest
+- Erreur Moyenne (MAE) : 0.75 points
+- Explication : En moyenne, ce modèle se trompe de moins de 1 point sur la note finale.
