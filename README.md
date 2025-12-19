@@ -1,6 +1,6 @@
 # 🎓 Student Performance Prediction
 
-A complete Machine Learning pipeline to predict student academic performance (Pass/Fail and Final Grade) ..
+A complete Machine Learning pipeline to predict student academic performance .
 
 ![Python](https://img.shields.io/badge/Python-3.9-blue?style=for-the-badge&logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Container-2496ED?style=for-the-badge&logo=docker&logoColor=white)
